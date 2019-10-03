@@ -2,14 +2,62 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AStarScript
+public class AStarScript : MonoBehaviour
 {
     static List<GridSquareScript> openList;
     static List<GridSquareScript> closedList;
 
     // There should only be one pathfinder at any given time, so yeah, everything is static. 
-    public static void findPath() {
+    public static IEnumerator findPath() {
+        WaitForSeconds wait = new WaitForSeconds(0.05f);
+        GridSquareScript.start.distanceFromStart = 0;
+        GridSquareScript.start.distanceFromEnd = heuristic(GridSquareScript.start);
+        closedList.Add(GridSquareScript.start);
 
+        foreach(GridSquareScript n in GridSquareScript.start.neighbors) {
+            //add the neighbors to the open list.
+            n.parent = GridSquareScript.start;
+            n.distanceFromEnd = heuristic(n);
+            n.distanceFromStart = n.parent.distanceFromStart + (n.position - n.parent.position).magnitude;
+            n.childRenderer.material.SetColor("_Color", Color.yellow);
+            yield return wait;
+        }
+
+        while(!closedList.Contains(GridSquareScript.end)) {
+            if(openList.Count == 0) {
+                //There are no more squares to explore. 
+                break;
+            }
+            GridSquareScript current = openList[0];
+            float curDist = current.distanceFromStart + current.distanceFromEnd;
+            foreach(GridSquareScript sq in openList) {
+                if(curDist > sq.distanceFromEnd + sq.distanceFromStart) {
+                    //Swap to the smallest total distance.
+                    curDist = sq.distanceFromEnd + sq.distanceFromStart;
+                    current = sq;
+                }
+            }
+            if(current == GridSquareScript.end) {
+                //We've found the path, time to render it.
+                //TODO: Finish the path rendering.
+            }
+            else {
+                //Shows the selected open node.
+                current.childRenderer.material.SetColor("_Color", Color.magenta);
+                yield return wait);
+                foreach(GridSquareScript n in current.neighbors) {
+                    n.parent = current;
+                    n.distanceFromEnd = heuristic(n);
+                    n.distanceFromStart = n.parent.distanceFromStart + (n.position - n.parent.position).magnitude;
+                    n.childRenderer.material.SetColor("_Color", Color.yellow);
+                    yield return wait;
+                }
+                
+            }
+
+        }
+
+        yield return wait;
     }
 
     /*

@@ -18,7 +18,9 @@ public class GridSquareScript : MonoBehaviour
     public static Toggle EndToggle;
     public Vector2 position;
     public float distanceFromStart;
+    public float distanceFromEnd;
     public List<GridSquareScript> neighbors;
+    public GridSquareScript parent;
 
     // Start is called before the first frame update
 
@@ -50,7 +52,7 @@ public class GridSquareScript : MonoBehaviour
         }
 
         if(start != null && end != null) {
-            AStarScript.findPath();
+            StartCoroutine(AStarScript.findPath());
         }
     }
 
