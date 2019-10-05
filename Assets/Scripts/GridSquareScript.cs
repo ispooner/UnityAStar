@@ -10,7 +10,7 @@ public class GridSquareScript : MonoBehaviour
     public static GridSquareScript end;
     public GameObject wall;
     public MeshRenderer childRenderer;
-    bool walkable;
+    public bool walkable;
 
     //toggles for selecting things
     public static Toggle WallToggle;
@@ -21,6 +21,10 @@ public class GridSquareScript : MonoBehaviour
     public float distanceFromEnd;
     public List<GridSquareScript> neighbors;
     public GridSquareScript parent;
+
+    public GridMapScript mapScript;
+    public Canvas canvas;
+    public Text text;
 
     // Start is called before the first frame update
 
@@ -37,6 +41,7 @@ public class GridSquareScript : MonoBehaviour
     void Awake() {
         Debug.Log(position.x + ", " + position.y + "is awakening");
         walkable = true;
+        canvas = GetComponentInChildren<Canvas>();
     }
 
     void OnMouseDown() {
@@ -52,6 +57,7 @@ public class GridSquareScript : MonoBehaviour
         }
 
         if(start != null && end != null) {
+            mapScript.resetGrid();
             StartCoroutine(AStarScript.findPath());
         }
     }
@@ -61,13 +67,13 @@ public class GridSquareScript : MonoBehaviour
                 childRenderer.material.SetColor("_Color", Color.blue);
                 wall.SetActive(true);
                 walkable = false;
-                Debug.Log("Wall is active");
+                //Debug.Log("Wall is active");
             }
             else {
                 childRenderer.material.SetColor("_Color", Color.white);
                 wall.SetActive(false);
                 walkable = true;
-                Debug.Log("Wall is inactive");
+                //Debug.Log("Wall is inactive");
             }
             if(start == this) {
                 start = null;
@@ -79,26 +85,26 @@ public class GridSquareScript : MonoBehaviour
 
     public void setStart() {
         if(start != null) {
-                start.childRenderer.material.SetColor("_Color", Color.white);
-            }
-            start = this;
-            childRenderer.material.SetColor("_Color", Color.green);
-            if(end == start) {
-                end = null;
-            }
-            Debug.Log("Start selected");
+            start.childRenderer.material.SetColor("_Color", Color.white);
+        }
+        start = this;
+        childRenderer.material.SetColor("_Color", Color.green);
+        if(end == start) {
+            end = null;
+        }
+        //Debug.Log("Start selected");
     }
 
     public void setEnd() {
         if(end != null) {
-                end.childRenderer.material.SetColor("_Color", Color.white);
-            }
-            end = this;
-            childRenderer.material.SetColor("_Color", Color.red);
-            if(start == end) {
-                start = null;
-            }
-            Debug.Log("End Selected");
+            end.childRenderer.material.SetColor("_Color", Color.white);
+        }
+        end = this;
+        childRenderer.material.SetColor("_Color", Color.red);
+        if(start == end) {
+            start = null;
+        }
+        //Debug.Log("End Selected");
     }
 
     void OnMouseUp() {

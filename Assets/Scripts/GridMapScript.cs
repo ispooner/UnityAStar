@@ -15,14 +15,16 @@ public class GridMapScript : MonoBehaviour
     public Toggle wallToggle;
     public Toggle startToggle;
     public Toggle endToggle;
+    GridSquareScript[,] grid;
+    public Text labelText;
 
     void Awake()
     {
         //Old code for testing coroutines
         //StartCoroutine(Generate());
-        GridSquareScript[,] grid = new GridSquareScript[width, height];
-        makeMap(grid);
-        fillNeighbours(grid);
+        grid = new GridSquareScript[width, height];
+        makeMap();
+        fillNeighbours();
         GridSquareScript.WallToggle = wallToggle;
         GridSquareScript.StartToggle = startToggle;
         GridSquareScript.EndToggle = endToggle;
@@ -41,11 +43,17 @@ public class GridMapScript : MonoBehaviour
     */
 
     //Generate the map squares.
-    private void makeMap(GridSquareScript[,] grid) {
+    private void makeMap() {
         for(int x = 0; x < width; x++) {
             for(int z = 0; z < height; z++) {
                 grid[x,z] = Instantiate(gridSquare, new Vector3(x, 0, z), Quaternion.identity);
                 grid[x,z].position = new Vector2(x, z);
+                grid[x,z].mapScript = this;
+                Text label = Instantiate<Text>(labelText);
+                label.rectTransform.SetParent(grid[x,z].canvas.transform, false);
+                label.rectTransform.anchoredPosition = new Vector2(0f, 0f);
+                label.text = x.ToString() + ", " + z.ToString();
+                grid[x,z].text = label;
             }
         }
         grid[0,0].setStart();
@@ -53,7 +61,7 @@ public class GridMapScript : MonoBehaviour
     }
 
     //After the squares are generated add their neighbours to each other.
-    private void fillNeighbours(GridSquareScript[,] grid) {
+    private void fillNeighbours() {
         for(int x = 0; x < width; x++) {
             for(int z = 0; z < height; z++) {
                 GridSquareScript obj = grid[x,z];
@@ -74,6 +82,23 @@ public class GridMapScript : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void resetGrid() {
+        for(int x = 0; x < width; x++) {
+            for(int z = 0; z < height; z++) {
+                if(grid[x,z].walkable) {
+                    grid[x,z].childRenderer.material.SetColor("_Color", Color.white);
+                }
+                else {
+                    grid[x,z].childRenderer.material.SetColor("_Color", Color.blue);
+                }
+                grid[x,z].text.text = x.ToString() + ", " + z;
+            }
+        }
+
+        GridSquareScript.start.childRenderer.material.SetColor("_Color", Color.green);
+        GridSquareScript.end.childRenderer.material.SetColor("_Color", Color.red);
     }
 
 }

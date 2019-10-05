@@ -9,7 +9,9 @@ public class AStarScript : MonoBehaviour
 
     // There should only be one pathfinder at any given time, so yeah, everything is static. 
     public static IEnumerator findPath() {
-        WaitForSeconds wait = new WaitForSeconds(0.05f);
+        openList = new List<GridSquareScript>();
+        closedList = new List<GridSquareScript>();
+        WaitForSeconds wait = new WaitForSeconds(0.1f);
         GridSquareScript.start.distanceFromStart = 0;
         GridSquareScript.start.distanceFromEnd = heuristic(GridSquareScript.start);
         closedList.Add(GridSquareScript.start);
@@ -20,6 +22,7 @@ public class AStarScript : MonoBehaviour
             n.distanceFromEnd = heuristic(n);
             n.distanceFromStart = n.parent.distanceFromStart + (n.position - n.parent.position).magnitude;
             n.childRenderer.material.SetColor("_Color", Color.yellow);
+            openList.Add(n);
             yield return wait;
         }
 
@@ -40,19 +43,51 @@ public class AStarScript : MonoBehaviour
             if(current == GridSquareScript.end) {
                 //We've found the path, time to render it.
                 //TODO: Finish the path rendering.
+
+                //We've found the path
+                break;
             }
             else {
                 //Shows the selected open node.
                 current.childRenderer.material.SetColor("_Color", Color.magenta);
-                yield return wait);
+                yield return wait;
                 foreach(GridSquareScript n in current.neighbors) {
+                    if(closedList.Contains(n)) {
+                        continue;
+                    }
+                    if(!n.walkable) {
+                        continue;
+                    }
+                    if(openList.Contains(n)) {
+                        float th = heuristic(n);
+                        float tds = current.distanceFromStart + (n.position - current.position).magnitude;
+                        if(n.distanceFromStart + n.distanceFromEnd > th + tds) {
+                            n.parent = current;
+                            n.distanceFromEnd = th;
+                            n.distanceFromStart = tds;
+                            n.text.text = n.text.text + 
+                                "\nD=" + n.distanceFromStart + 
+                                "\nF=" + n.distanceFromEnd + 
+                                "\nT=" + (n.distanceFromEnd + n.distanceFromStart);
+                        }
+                        continue;
+                    }
                     n.parent = current;
                     n.distanceFromEnd = heuristic(n);
                     n.distanceFromStart = n.parent.distanceFromStart + (n.position - n.parent.position).magnitude;
                     n.childRenderer.material.SetColor("_Color", Color.yellow);
+                    n.text.text = n.text.text + 
+                        "\nD=" + n.distanceFromStart + 
+                        "\nF=" + n.distanceFromEnd + 
+                        "\nT=" + (n.distanceFromEnd + n.distanceFromStart);
+
+                    openList.Add(n);
                     yield return wait;
                 }
-                
+
+                openList.Remove(current);
+                closedList.Add(current);
+                current.childRenderer.material.SetColor("_Color", Color.grey);
             }
 
         }
@@ -69,11 +104,11 @@ public class AStarScript : MonoBehaviour
         //Octile distance is the shortest possible distance on a regular square grid. 
 
         //The squares themselves lie on the XZ plane. Vector2 uses XY, so a bit of translation is needed.
-        float difX = GridSquareScript.end.position.x - current.position.x;
-        float difY = GridSquareScript.end.position.y - current.position.y;
+        float difX = Mathf.Abs(GridSquareScript.end.position.x - current.position.x);
+        float difY = Mathf.Abs(GridSquareScript.end.position.y - current.position.y);
 
         //The shorter distance is the diagonal distance. 1.41 is a suitable distance measure for the diagonal.
-        float diag = (difX < difY ? difX : difY) * 1.41f;
+        float diag = (difX < difY ? difX : difY) * Mathf.Sqrt(2);
         //The straight distance is the difference between the two axes. 
         float straight = Mathf.Abs(difX - difY);
         //The total distance is the sum of the two.
