@@ -94,6 +94,7 @@ public class GridMapScript : MonoBehaviour
                     grid[x,z].childRenderer.material.SetColor("_Color", Color.blue);
                 }
                 grid[x,z].text.text = x.ToString() + ", " + z;
+                grid[x,z].parent = null;
             }
         }
 

@@ -45,6 +45,21 @@ public class AStarScript : MonoBehaviour
                 //TODO: Finish the path rendering.
 
                 //We've found the path
+                current.childRenderer.material.SetColor("_Color", Color.red);
+                GridSquareScript next = current;
+                float total = 0;
+                while(current.parent != null) {
+                    total = total + 1;
+                    current = current.parent;
+                }
+                float len = 1;
+                next = next.parent;
+                while(next.parent != null) {
+                    next.childRenderer.material.SetColor("_Color", Color.Lerp(Color.red, Color.green, len/total));
+                    len = len + 1;
+                    next = next.parent;
+                    yield return wait;
+                }
                 break;
             }
             else {
